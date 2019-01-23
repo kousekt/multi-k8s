@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deployment
+spec:
+  replicas: 1
+  selector:
+    # look for a label that is matching
+    matchLabels:
+      component: postgres
+  template:
+    metadata:
+      labels:
+        component: postgres
+    spec:
+      volumes:
+        - name: postgres-storage
+          # reach out to k8 and say "I need this..."
+          # this will just allocate the storage only..
+          persistentVolumeClaim:
+            claimName: database-persistent-volume-claim
+      containers:
+        - name: postgres
+          image: postgres          
+          ports:
+            - containerPort: 5432    
+          # we just got access to the storage and here's how I want to use it
+          volumeMounts:
+            # volume name and volume mount name MUST be the same
+            - name: postgres-storage
+              # where the storage should be available
+              # 
+              mountPath: /var/lib/postgresql/data
+              # any data (inside of the container) that is stored in "/var/lib/postgresql/data"
+              # is going to be stored in a folder called "postgres" inside of the persisten volume claim
+              subPath: postgres
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  # kubectl create secret generic pgpassword --from-literal PGPASSWORD=12345asdf
+                  name: pgpassword
+                  key: PGPASSWORD

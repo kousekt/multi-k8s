@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+# this service will govern access to the express api
+metadata:
+  name: server-cluster-ip-service
+spec:
+  type: ClusterIP
+  # what set of pods we want access to (all of the multi server pods, look at label component server how they did it)
+  selector:
+    component: server
+  ports:
+    - port: 5000
+      targetPort: 5000

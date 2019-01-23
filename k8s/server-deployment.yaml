@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-deployment
+spec:
+  # 3 pods running multi-server image
+  replicas: 3
+  # this is the selector deployment will use
+  selector:
+    matchLabels:
+      component: server
+  # pod template
+  template:
+    metadata:
+      # should match up to what we put in the spec itself
+      labels:
+        component: server
+    spec:
+      # containers the pod should run
+      containers:
+        - name: server
+          image: tkousek/multi-server
+          ports:
+            - containerPort: 5000
+          env:
+            - name: REDIS_HOST
+              value: redis-cluster-ip-service
+            - name: REDIS_PORT
+              value: '6379'
+            - name: PGUSER
+              value: postgres
+            - name: PGHOST
+              value: postgres-cluster-ip-service
+            - name: PGPORT
+              value: '5432'
+            - name: PGDATABASE
+              value: postgres
+            # the name of the env variable
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  # We created a secret named "pgpassword"
+                  name: pgpassword
+                  # the key is PGPASSWORD from the kubectl create secret command
+                  # and pass that into our container as the password
+                  # kubectl create secret generic pgpassword --from-literal PGPASSWORD=12345asdf
+                  key: PGPASSWORD
