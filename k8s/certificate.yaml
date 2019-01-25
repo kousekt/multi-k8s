@@ -1,0 +1,20 @@
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: tkousek-com-tls
+spec:
+  secretName: tkousek-com
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: tkousek.com
+  dnsNames:
+    - tkousek.com
+    - www.tkousek.com
+  acme:
+    config:
+      - http01:
+          ingressClass: nginx
+        domains:
+          - tkousek.com
+          - www.tkousek.com
